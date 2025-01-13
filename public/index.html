@@ -31,7 +31,14 @@
     </style>
   </head>
   <body>
-    <h1>Popup App Generator</h1>
+    <h1>Agent Generator</h1>
+    <h3>
+      <ul>
+        <li>1. Create an Assistant in OpenAI</li>
+        <li>2. Upload Files to VectorDB and Attach to Assistant</li>
+        <li>3. Create App Code for WebPage</li>
+      </ul>
+    </h3>
     <div class="container">
       <div class="column">
         <form id="generator-form">
@@ -40,12 +47,22 @@
             <input type="text" name="title" id="title" required /></label
           ><br /><br />
           <label
-            >System Message:
+            >Assistant Name:
             <input
               type="text"
-              name="systemMessage"
-              id="systemMessage"
+              name="assistant_name"
+              id="assistant_name"
               required /></label
+          ><br /><br />
+          <label
+            >Assistant System Message:
+            <input
+              type="text"
+              name="assistantMessage"
+              id="assistantMessage"
+              required /></label
+          ><br /><br />
+          <button id="createAssistant">Create or get Assistant</button
           ><br /><br />
           <label
             >Directory Path:
@@ -59,25 +76,15 @@
             </select>
             <button id="uploadFiles">Upload Files to VectorDB</button> </label
           ><br /><br />
+
           <label
-            >Assistant Name:
-            <input
-              type="text"
-              name="assistant_name"
-              id="assistant_name"
-              required /></label
-          ><br /><br />
-          <label
-            >Assistant Instructions:
+            >Agent System Instructions:
             <textarea
-              name="assistant_instructions"
-              id="assistant_instructions"
-              rows="4"
+              name="agent_instructions"
+              id="agent_instructions"
               required
             ></textarea></label
           ><br /><br />
-
-          <button id="createAssistant">Create Assistant</button>
 
           <label
             >Initial Message:
@@ -94,6 +101,7 @@
               type="text"
               name="promptPlaceholder"
               id="promptPlaceholder"
+              rows="4"
               required /></label
           ><br /><br />
           <label
@@ -103,7 +111,7 @@
               <option value="dark">Dark</option>
             </select> </label
           ><br /><br />
-          <button type="submit">Create Agent</button>
+          <button id="generate_agent" type="submit">Generate Agent Code</button>
         </form>
       </div>
       <div class="column preview" id="preview">
@@ -144,23 +152,23 @@
 
           // Update system message
           document.getElementById("preview-system").innerText =
-            document.getElementById("systemMessage").value ||
+            document.getElementById("agent_instructions").value ||
             "[System Message]";
 
           // Update initial messages list
           const initialMessages = document
             .getElementById("initialMessage")
-            .value.split("\n");
+            .value.split("\n")
+            .map((msg) => msg.trim())
+            .filter((msg) => msg);
           const previewInitialList = document.getElementById(
             "preview-initial-list"
           );
           previewInitialList.innerHTML = "";
           initialMessages.forEach((msg) => {
-            if (msg.trim()) {
-              const li = document.createElement("li");
-              li.innerText = msg.trim();
-              previewInitialList.appendChild(li);
-            }
+            const li = document.createElement("li");
+            li.innerText = msg;
+            previewInitialList.appendChild(li);
           });
 
           // Update prompt placeholder
@@ -170,9 +178,12 @@
 
           // Update mode
           const mode = document.getElementById("mode").value;
+
           const preview = document.getElementById("preview");
-          preview.className =
-            mode === "dark" ? "column preview dark-mode" : "column preview";
+          preview.classList.remove("dark-mode");
+          if (mode === "dark") {
+            preview.classList.add("dark-mode");
+          }
         }
 
         document
@@ -212,54 +223,60 @@
         .getElementById("createAssistant")
         .addEventListener("click", async () => {
           const name = document.getElementById("assistant_name").value;
-          const instructions = document.getElementById(
-            "assistant_instructions"
-          ).value;
+          const assistantMessage =
+            document.getElementById("assistantMessage").value;
 
           const response = await fetch("/create_or_get_assistant", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ name, instructions }),
+            body: JSON.stringify({ name, assistantMessage }),
           });
 
           const result = await response.json();
           alert(result.message);
         });
-      app.post("/attach_vectordb_to_assistant", async (req, res) => {
-        const { assistant_id, vectordb_id } = req.body;
+      document
+        .getElementById("generate_agent")
+        .addEventListener("click", async () => {
+          const title = document.getElementById("title").value;
+          const systemMessage =
+            document.getElementById("agent_instructions").value;
+          const initialMessage = document.getElementById(
+            "preview-initial-list"
+          ).value;
+          const promptPlaceholder =
+            document.getElementById("preview-prompt").value;
+          const mode = document.getElementById("mode").value;
 
-        if (!assistant_id || !vectordb_id) {
-          return res
-            .status(400)
-            .json({
-              message: "Both assistant_id and vectordb_id are required.",
-            });
-        }
-
-        try {
-          // Update the assistant to include the vector store
-          const response = await openai.beta.assistants.update(assistant_id, {
-            tool_resources: {
-              file_search: {
-                vector_store_ids: [vectordb_id],
-              },
+          // get the state of the focus
+          const { mesg, focus } = await fetch("/get_focus", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
             },
+            body: JSON.stringify({}),
+          });
+          // generate agent code
+          const response = await fetch("/generate_agent", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              focus,
+              title,
+              systemMessage,
+              initialMessage,
+              promptPlaceholder,
+              mode,
+            }),
           });
 
-          res.status(200).json({
-            message: `Successfully attached VectorDB (${vectordb_id}) to Assistant (${assistant_id}).`,
-            assistant: response,
-          });
-        } catch (error) {
-          console.error("Failed to attach VectorDB to Assistant:", error);
-          res.status(500).json({
-            message: "Failed to attach VectorDB to Assistant.",
-            error: error.message || error,
-          });
-        }
-      });
+          const result = await response.json();
+          alert(result.message);
+        });
     </script>
   </body>
 </html>

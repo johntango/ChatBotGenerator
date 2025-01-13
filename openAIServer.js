@@ -50,6 +50,80 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '/public/index.html')); 
 });
 
+// Create or Get Assistant
+app.post('/create_or_get_assistant', async (req, res) => {
+    const { name, systemMessage } = req.body;
+    let instructions = systemMessage;
+
+    if (!name || !systemMessage) {
+        return res.status(400).json({ message: "Assistant name and system Message are required." });
+    }
+
+    try {
+        const response = await openai.beta.assistants.list({ order: "desc", limit: 20 });
+
+        // Find existing assistant by name
+        let assistant = response.data.find(a => a.name && a.name.toLowerCase() === name.toLowerCase());
+        if (assistant) {
+            focus.assistant_id = assistant.id;
+            focus.assistant_name = assistant.name;
+            if(assistant.tool_resources.file_search.vector_store_ids.length > 0){
+                focus.vector_store_id = assistant.tool_resources.file_search.vector_store_ids[0];
+            }
+            return res.status(200).json({ message:  `Got Assistant id:${focus.assistant_id} successfully. Using VectorDB ${focus.vector_store_id}`, focus });
+        }
+
+        // Create a new assistant
+        assistant = await openai.beta.assistants.create({
+            name,
+            instructions,
+            model: "gpt-4-1106-preview",
+        });
+
+        focus.assistant_id = assistant.id;
+        focus.assistant_name = name;
+
+        res.status(200).json({ message: `Assistant id:${focus.assistant_id} created successfully.`,  focus });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Assistant creation failed.", error });
+    }
+});
+// 1. Get Assistant by Name and Check File Search
+app.post('/get_assistant', async (req, res) => {
+    const { name } = req.body;
+
+    try {
+        // get assistant id
+        const assistants = await openai.beta.assistants.list({
+            order: "desc",
+            limit: 10,
+        })
+
+        // Find assistant by name
+        const assistant = assistants.data.find(a => a.name === name);
+
+        if (!assistant) {
+            return res.status(404).json({ message: "Assistant not found", focus });
+        }
+
+        if (!assistant.file_search_enabled) {
+            return res.status(400).json({ message: "File Search is not enabled for this assistant", focus });
+        }
+
+        // Update focus state
+        focus.assistant_id = assistant.id;
+        focus.assistant_name = assistant.name;
+        focus.vector_store_id = assistant.vector_db_id;
+
+        res.json({
+            message: `Assistant '${assistant.name}' retrieved successfully`,
+            focus
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message, focus });
+    }
+});
 
 //
 // Upload Files to VectorDB
@@ -106,41 +180,6 @@ app.post('/upload_files', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Upload action failed', error, focus });
-    }
-});
-// 1. Get Assistant by Name and Check File Search
-app.post('/get_assistant', async (req, res) => {
-    const { name } = req.body;
-
-    try {
-        // get assistant id
-        const assistants = await openai.beta.assistants.list({
-            order: "desc",
-            limit: 10,
-        })
-
-        // Find assistant by name
-        const assistant = assistants.data.find(a => a.name === name);
-
-        if (!assistant) {
-            return res.status(404).json({ message: "Assistant not found", focus });
-        }
-
-        if (!assistant.file_search_enabled) {
-            return res.status(400).json({ message: "File Search is not enabled for this assistant", focus });
-        }
-
-        // Update focus state
-        focus.assistant_id = assistant.id;
-        focus.assistant_name = assistant.name;
-        focus.vector_store_id = assistant.vector_db_id;
-
-        res.json({
-            message: `Assistant '${assistant.name}' retrieved successfully`,
-            focus
-        });
-    } catch (error) {
-        res.status(500).json({ message: error.message, focus });
     }
 });
 
@@ -208,12 +247,12 @@ app.post('/run_thread', async (req, res) => {
 });
 // Create or Get Assistant
 app.post('/create_or_get_assistant', async (req, res) => {
-    const { name, instructions } = req.body;
+    let { name, assistantMessage } = req.body;
+    let instructions = assistantMessage;
 
-    if (!name || !instructions) {
-        return res.status(400).json({ message: "Assistant name and instructions are required." });
-    }
-
+    if (!name || !assistantMessage) {
+        return res.status(400).json({ message: "Assistant name and assistantMessage are required." });
+    };
     try {
         const response = await openai.beta.assistants.list({ order: "desc", limit: 20 });
 
