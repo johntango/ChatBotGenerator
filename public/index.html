@@ -65,7 +65,7 @@
           <button id="createAssistant">Create or get Assistant</button
           ><br /><br />
           <label
-            >Directory Path:
+            >Directory Path for Files Upload:
             <input type="text" name="dir_path" id="dir_path" required /></label
           ><br /><br />
           <label
@@ -240,24 +240,25 @@
       document
         .getElementById("generate_agent")
         .addEventListener("click", async () => {
-          const title = document.getElementById("title").value;
-          const systemMessage =
-            document.getElementById("agent_instructions").value;
-          const initialMessage = document.getElementById(
+          let title = document.getElementById("preview-title").value;
+          let systemMessage = document.getElementById("preview-system").value;
+          let initialMessage = document.getElementById(
             "preview-initial-list"
           ).value;
-          const promptPlaceholder =
+          let promptPlaceholder =
             document.getElementById("preview-prompt").value;
-          const mode = document.getElementById("mode").value;
+          let mode = document.getElementById("mode").value;
 
           // get the state of the focus
-          const { mesg, focus } = await fetch("/get_focus", {
+          console.log("fetching focus");
+          let { message, focus } = await fetch("/get_focus", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({}),
           });
+          console.log("got foccus");
           // generate agent code
           const response = await fetch("/generate_agent", {
             method: "POST",
@@ -273,9 +274,22 @@
               mode,
             }),
           });
+          console.log("response from generate_agent", response);
+          if (response.ok) {
+            const agentCode = await response.text(); // Parse the response as plain text
+            console.log("Agent code generated:", agentCode);
 
-          const result = await response.json();
-          alert(result.message);
+            // Optional: Dynamically download the file
+            const blob = new Blob([agentCode], {
+              type: "application/javascript",
+            });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "popupAgent.js";
+            link.click();
+          } else {
+            console.error("Error generating agent:", await response.text());
+          }
         });
     </script>
   </body>

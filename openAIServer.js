@@ -52,10 +52,10 @@ app.get('/', (req, res) => {
 
 // Create or Get Assistant
 app.post('/create_or_get_assistant', async (req, res) => {
-    const { name, systemMessage } = req.body;
-    let instructions = systemMessage;
+    const { name, assistantMessage } = req.body;
+    let instructions = assistantMessage;
 
-    if (!name || !systemMessage) {
+    if (!name || !assistantMessage) {
         return res.status(400).json({ message: "Assistant name and system Message are required." });
     }
 
@@ -316,7 +316,7 @@ app.post('/attach_vectordb_to_assistant', async (req, res) => {
     }
 });
 // Handle agent generation
-app.post("/generate-agent", (req, res) => {
+app.post("/generate_agent", (req, res) => {
     const { focus, title, systemMessage, initialMessage, promptPlaceholder, mode } = req.body;
     const agentCode = `
 (function () {
@@ -457,7 +457,7 @@ app.post("/generate-agent", (req, res) => {
     res.type("application/javascript").send(agentCode);
 });
 // 6. Get Current Focus State (Optional Endpoint for Debugging)
-app.get('/get_focus', (req, res) => {
+app.post('/get_focus', (req, res) => {
     res.json({
         message: "Current focus state retrieved successfully",
         focus
