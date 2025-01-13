@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Popup App Generator</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .container {
+        display: flex;
+        gap: 20px;
+      }
+      .column {
+        flex: 1;
+        border: 1px solid #ddd;
+        padding: 20px;
+      }
+      .preview {
+        border: 1px solid #000;
+        padding: 20px;
+        background-color: white;
+        color: black;
+      }
+      .dark-mode {
+        background-color: #333;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Popup App Generator</h1>
+    <div class="container">
+      <div class="column">
+        <form id="generator-form">
+          <label
+            >Title of App:
+            <input type="text" name="title" id="title" required /></label
+          ><br /><br />
+          <label
+            >System Message:
+            <input
+              type="text"
+              name="systemMessage"
+              id="systemMessage"
+              required /></label
+          ><br /><br />
+          <label
+            >Directory Path:
+            <input type="text" name="dir_path" id="dir_path" required /></label
+          ><br /><br />
+          <label
+            >Embed Type:
+            <select name="embed_type" id="embed_type">
+              <option value="openai">OpenAI</option>
+              <option value="local">Local</option>
+            </select>
+            <button id="uploadFiles">Upload Files to VectorDB</button> </label
+          ><br /><br />
+          <label
+            >Assistant Name:
+            <input
+              type="text"
+              name="assistant_name"
+              id="assistant_name"
+              required /></label
+          ><br /><br />
+          <label
+            >Assistant Instructions:
+            <textarea
+              name="assistant_instructions"
+              id="assistant_instructions"
+              rows="4"
+              required
+            ></textarea></label
+          ><br /><br />
+
+          <button id="createAssistant">Create Assistant</button>
+
+          <label
+            >Initial Message:
+            <textarea
+              name="initialMessage"
+              id="initialMessage"
+              rows="4"
+              required
+            ></textarea></label
+          ><br /><br />
+          <label
+            >Prompt Placeholder:
+            <input
+              type="text"
+              name="promptPlaceholder"
+              id="promptPlaceholder"
+              required /></label
+          ><br /><br />
+          <label
+            >Mode:
+            <select name="mode" id="mode">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select> </label
+          ><br /><br />
+          <button type="submit">Create Agent</button>
+        </form>
+      </div>
+      <div class="column preview" id="preview">
+        <h2 id="preview-title">[Title]</h2>
+        <div>
+          <strong>System Message:</strong>
+          <span id="preview-system">[System Message]</span>
+        </div>
+        <div>
+          <strong>Initial Messages:</strong>
+          <ul id="preview-initial-list">
+            [Initial Messages]
+          </ul>
+        </div>
+        <div><strong>Prompt:</strong></div>
+        <input
+          type="text"
+          placeholder="[Prompt Placeholder]"
+          id="preview-prompt"
+        />
+        <button>&#8594;</button>
+        <div>
+          <strong>Response:</strong>
+          <div id="preview-response" style="height: 200px; overflow-y: auto">
+            [Response]
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        function updatePreview() {
+          console.log("updatePreview called");
+
+          // Update title
+          document.getElementById("preview-title").innerText =
+            document.getElementById("title").value || "[Title]";
+
+          // Update system message
+          document.getElementById("preview-system").innerText =
+            document.getElementById("systemMessage").value ||
+            "[System Message]";
+
+          // Update initial messages list
+          const initialMessages = document
+            .getElementById("initialMessage")
+            .value.split("\n");
+          const previewInitialList = document.getElementById(
+            "preview-initial-list"
+          );
+          previewInitialList.innerHTML = "";
+          initialMessages.forEach((msg) => {
+            if (msg.trim()) {
+              const li = document.createElement("li");
+              li.innerText = msg.trim();
+              previewInitialList.appendChild(li);
+            }
+          });
+
+          // Update prompt placeholder
+          document.getElementById("preview-prompt").placeholder =
+            document.getElementById("promptPlaceholder").value ||
+            "[Prompt Placeholder]";
+
+          // Update mode
+          const mode = document.getElementById("mode").value;
+          const preview = document.getElementById("preview");
+          preview.className =
+            mode === "dark" ? "column preview dark-mode" : "column preview";
+        }
+
+        document
+          .querySelectorAll(
+            "#generator-form input, #generator-form textarea, #generator-form select"
+          )
+          .forEach((element) => {
+            element.addEventListener("input", updatePreview);
+            element.addEventListener("change", updatePreview);
+          });
+
+        console.log(
+          document.querySelectorAll(
+            "#generator-form input, #generator-form textarea, #generator-form select"
+          )
+        );
+      });
+      document
+        .getElementById("uploadFiles")
+        .addEventListener("click", async () => {
+          const dirPath = document.getElementById("dir_path").value;
+          const embedType = document.getElementById("embed_type").value;
+
+          const response = await fetch("/upload_files", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ dir_path: dirPath, embed_type: embedType }),
+          });
+
+          const result = await response.json();
+          alert(result.message);
+        });
+
+      document
+        .getElementById("createAssistant")
+        .addEventListener("click", async () => {
+          const name = document.getElementById("assistant_name").value;
+          const instructions = document.getElementById(
+            "assistant_instructions"
+          ).value;
+
+          const response = await fetch("/create_or_get_assistant", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ name, instructions }),
+          });
+
+          const result = await response.json();
+          alert(result.message);
+        });
+      app.post("/attach_vectordb_to_assistant", async (req, res) => {
+        const { assistant_id, vectordb_id } = req.body;
+
+        if (!assistant_id || !vectordb_id) {
+          return res
+            .status(400)
+            .json({
+              message: "Both assistant_id and vectordb_id are required.",
+            });
+        }
+
+        try {
+          // Update the assistant to include the vector store
+          const response = await openai.beta.assistants.update(assistant_id, {
+            tool_resources: {
+              file_search: {
+                vector_store_ids: [vectordb_id],
+              },
+            },
+          });
+
+          res.status(200).json({
+            message: `Successfully attached VectorDB (${vectordb_id}) to Assistant (${assistant_id}).`,
+            assistant: response,
+          });
+        } catch (error) {
+          console.error("Failed to attach VectorDB to Assistant:", error);
+          res.status(500).json({
+            message: "Failed to attach VectorDB to Assistant.",
+            error: error.message || error,
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
