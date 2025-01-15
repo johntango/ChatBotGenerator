@@ -449,6 +449,14 @@ app.post("/generate_agent", (req, res) => {
             return;
         }
     });
+    const popupDiv = document.getElementById('popup');
+
+// Append the container to the div if it exists, otherwise to the body
+if (popupDiv) {
+    popupDiv.appendChild(container);
+} else {
+    document.body.appendChild(container); // Fallback if no "popup" div exists
+}
     document.body.appendChild(container);
 })();
     `;

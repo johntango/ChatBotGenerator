@@ -72,6 +72,11 @@
     responseDiv.style.padding = '10px';
     container.appendChild(responseDiv);
 
+    const toggleButton = document.createElement('toggleButton');
+    toggleButton.innerHTML = 'toggle popup';
+    toggleButton.onclick = togglePopup;
+    container.appendChild(toggleButton);
+
     sendButton.addEventListener('click', async function () {
         const userPrompt = promptInput.value;
         const systemMessage = systemDiv.innerText;
@@ -128,5 +133,12 @@
             return;
         }
     });
-    document.body.appendChild(container);
+    const popupDiv = document.getElementById('popup');
+   
+// Append the container to the div if it exists, otherwise to the body
+    if (popupDiv) {
+        popupDiv.appendChild(container);
+    } else {
+        document.body.appendChild(container); // Fallback if no "popup" div exists
+    }
 })();
