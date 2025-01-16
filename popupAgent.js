@@ -12,7 +12,9 @@
         "vector_store_id": "vs_Sp1SnNSu2EocNhnBNt1ns1Dk",
         "embed_type": "openai"
     };
-    const domain = 'https://super-duper-journey-g7q947467w93vr45-3000.app.github.dev';
+       // when running on codespaces port 3000 there is no need for adding :3000 also there do not end with / 
+    
+    const domain = 'https://vigilant-rotary-phone-xvw65v5xrgvh65gg-3000.app.github.dev';
     let messages = [];
     const container = document.createElement('div');
     container.style.position = 'fixed';
@@ -72,11 +74,6 @@
     responseDiv.style.padding = '10px';
     container.appendChild(responseDiv);
 
-    const toggleButton = document.createElement('toggleButton');
-    toggleButton.innerHTML = 'toggle popup';
-    toggleButton.onclick = togglePopup;
-    container.appendChild(toggleButton);
-
     sendButton.addEventListener('click', async function () {
         const userPrompt = promptInput.value;
         const systemMessage = systemDiv.innerText;
@@ -134,8 +131,8 @@
         }
     });
     const popupDiv = document.getElementById('popup');
-   
-// Append the container to the div if it exists, otherwise to the body
+
+    // Append the container to the div if it exists, otherwise to the body
     if (popupDiv) {
         popupDiv.appendChild(container);
     } else {

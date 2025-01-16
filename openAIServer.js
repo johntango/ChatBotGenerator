@@ -10,6 +10,8 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = 3000;
+const CODESPACE_NAME = process.env.CODESPACE_NAME; // The Codespaces name provided by GitHub
+
 // Middleware to serve static files and parse request bodies
 app.use(express.static("public"));
 app.use(express.json());
@@ -317,7 +319,7 @@ app.post('/attach_vectordb_to_assistant', async (req, res) => {
 });
 // Handle agent generation
 app.post("/generate_agent", (req, res) => {
-    const { focus, title, systemMessage, initialMessage, promptPlaceholder, mode } = req.body;
+    const { focus, title, systemMessage, initialMessages, promptPlaceholder, mode } = req.body;
     const agentCode = `
 (function () {
     const mode = 'dark';
@@ -333,7 +335,9 @@ app.post("/generate_agent", (req, res) => {
         "vector_store_id": "vs_Sp1SnNSu2EocNhnBNt1ns1Dk",
         "embed_type": "openai"
     };
-    const domain = 'https://vigilant-rotary-phone-xvw65v5xrgvh65gg-3000.app.github.dev/';
+       // when running on codespaces port 3000 there is no need for adding :3000 also there do not end with / 
+    
+    const domain = 'https://${CODESPACE_NAME}-${PORT}.app.github.dev';
     let messages = [];
     const container = document.createElement('div');
     container.style.position = 'fixed';
@@ -346,12 +350,11 @@ app.post("/generate_agent", (req, res) => {
     container.style.color = mode === "dark" ? "#fff" : "#000";
 
     const title = document.createElement('h3');
-    title.innerText = 'Agent 23';
+    title.innerText = ${title};
     container.appendChild(title);
 
     const systemDiv = document.createElement('div');
-    systemDiv.innerText = 'you are a rat';
-    container.appendChild(systemDiv);
+    systemDiv.innerText = ${systemMessage};
 
     const initialDiv = document.createElement('div');
     initialDiv.style.display = 'flex';
@@ -363,8 +366,7 @@ app.post("/generate_agent", (req, res) => {
     initialDiv.style.marginTop = '10px';
     initialDiv.style.backgroundColor = mode === "dark" ? "#444" : "#f9f9f9";
     container.appendChild(initialDiv);
-
-    const initialMessages = JSON.parse('["Hey There"]');
+    const initialMessages = ${JSON.parse(initialMessages)};
     initialMessages.forEach(message => {
         const messageDiv = document.createElement('div');
         messageDiv.innerText = message;
@@ -374,12 +376,12 @@ app.post("/generate_agent", (req, res) => {
         messageDiv.style.borderRadius = '5px';
         messageDiv.style.padding = '10px';
         messageDiv.style.textAlign = 'center';
-        messageDiv.style.backgroundColor = mode === "dark" ? "#555" : "#fff";
+        messageDiv.style.backgroundColor = ${mode} === "dark" ? "#555" : "#fff";
         initialDiv.appendChild(messageDiv);
     });
 
     const promptInput = document.createElement('input');
-    promptInput.placeholder = 'go now ';
+    promptInput.placeholder = ${promptPlaceholder};
     container.appendChild(promptInput);
 
     const sendButton = document.createElement('button');
@@ -451,13 +453,12 @@ app.post("/generate_agent", (req, res) => {
     });
     const popupDiv = document.getElementById('popup');
 
-// Append the container to the div if it exists, otherwise to the body
-if (popupDiv) {
-    popupDiv.appendChild(container);
-} else {
-    document.body.appendChild(container); // Fallback if no "popup" div exists
-}
-    document.body.appendChild(container);
+    // Append the container to the div if it exists, otherwise to the body
+    if (popupDiv) {
+        popupDiv.appendChild(container);
+    } else {
+        document.body.appendChild(container); // Fallback if no "popup" div exists
+    }
 })();
     `;
 
@@ -474,6 +475,11 @@ app.post('/get_focus', (req, res) => {
 
 // Start the Express server
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    if (CODESPACE_NAME) {
+        const globalURL = `https://${CODESPACE_NAME}-${PORT}.app.github.dev`;
+        console.log(`Server running at ${globalURL}`);
+    } else {
+        console.log(`Server running at http://localhost:${PORT}`);
+    }
 });
 // This server exposes a set of endpoints to interact with the OpenAI API and manage the conversation flow with the assistant.
