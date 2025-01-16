@@ -319,10 +319,11 @@ app.post('/attach_vectordb_to_assistant', async (req, res) => {
 });
 // Handle agent generation
 app.post("/generate_agent", (req, res) => {
-    const { focus, title, systemMessage, initialMessages, promptPlaceholder, mode } = req.body;
+    const { title, systemMessage, testMessages, prompt, mode } = req.body;
     const agentCode = `
 (function () {
     const mode = 'dark';
+    // let focus = ${JSON.stringify(focus)};
     let focus = {
         "assistant_id": "asst_6d0Ow7DV8qmvNXqvkLKjhBi6",
         "assistant_name": "ax2",
@@ -366,7 +367,7 @@ app.post("/generate_agent", (req, res) => {
     initialDiv.style.marginTop = '10px';
     initialDiv.style.backgroundColor = mode === "dark" ? "#444" : "#f9f9f9";
     container.appendChild(initialDiv);
-    const initialMessages = ${JSON.parse(initialMessages)};
+    const initialMessages = ${(testMessages)};
     initialMessages.forEach(message => {
         const messageDiv = document.createElement('div');
         messageDiv.innerText = message;
@@ -381,7 +382,7 @@ app.post("/generate_agent", (req, res) => {
     });
 
     const promptInput = document.createElement('input');
-    promptInput.placeholder = ${promptPlaceholder};
+    promptInput.value = ${prompt};
     container.appendChild(promptInput);
 
     const sendButton = document.createElement('button');

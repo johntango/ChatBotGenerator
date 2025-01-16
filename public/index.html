@@ -34,39 +34,37 @@
     <h1>Agent Generator</h1>
     <h3>
       <ul>
-        <li>1. Create an Assistant in OpenAI</li>
-        <li>2. Upload Files to VectorDB and Attach to Assistant</li>
-        <li>3. Create App Code for WebPage</li>
+        <li>
+          1. Create or Get Assistant in OpenAI. If Assistant already has
+          VectorDB ignore next step
+        </li>
+        <li>2. Upload Files to VectorDB and Attach to Assistant if Needed</li>
+        <li>3. Generate App Code for WebPage</li>
       </ul>
     </h3>
     <div class="container">
       <div class="column">
         <form id="generator-form">
-          <label
-            >Title of App:
-            <input type="text" name="title" id="title" required /></label
-          ><br /><br />
-          <label
-            >Assistant Name:
+          <label for ="title">Title of App:</label> 
+            <input type="text" name="title" id="title" required /><br /><br />
+          <label for="assistant_name">Assistant Name:</label>
             <input
               type="text"
               name="assistant_name"
               id="assistant_name"
-              required /></label
-          ><br /><br />
-          <label
-            >Assistant System Message:
+              required /> <br /><br />
+          <label for="assistantMessage">Assistant System Message:</label>
             <input
               type="text"
               name="assistantMessage"
               id="assistantMessage"
-              required /></label
+              required />
           ><br /><br />
-          <button id="createAssistant">Create or get Assistant</button
+          <button id="createAssistant" type="button">Create or get Assistant</button
           ><br /><br />
           <label
             >Directory Path for Files Upload:
-            <input type="text" name="dir_path" id="dir_path" required /></label
+            <input type="text" name="dir_path" id="dir_path"  /></label
           ><br /><br />
           <label
             >Embed Type:
@@ -74,57 +72,49 @@
               <option value="openai">OpenAI</option>
               <option value="local">Local</option>
             </select>
-            <button id="uploadFiles">Upload Files to VectorDB</button> </label
+            <button id="uploadFiles" type="button">Upload Files to VectorDB</button> </label
           ><br /><br />
 
-          <label
-            >Agent System Instructions:
-            <textarea
+          <label for="agent_instructions">Agent System Instructions:</label>
+            <input
+              type="text"
               name="agent_instructions"
               id="agent_instructions"
               required
-            ></textarea></label
-          ><br /><br />
+            ></input><br /><br />
 
-          <label
-            >Initial Message:
-            <textarea
+          <label for ="initialMessage">Initial Message: </label>
+            <input
+              type="text"
               name="initialMessage"
               id="initialMessage"
-              rows="4"
-              required
-            ></textarea></label
-          ><br /><br />
-          <label
-            >Prompt Placeholder:
+            ></input><br /><br />
+            
+          <label for="promptPlaceholder">Prompt Placeholder:</label> 
             <input
               type="text"
               name="promptPlaceholder"
               id="promptPlaceholder"
-              rows="4"
-              required /></label
-          ><br /><br />
-          <label
-            >Mode:
+              required /><br /><br />
+
+          <label for="mode">Mode: </label>
             <select name="mode" id="mode">
               <option value="light">Light</option>
               <option value="dark">Dark</option>
-            </select> </label
-          ><br /><br />
-          <button id="generate_agent" type="submit">Generate Agent Code</button>
+            </select> <br /><br />
+
+          <button id="generate_agent" type="button">Generate Agent Code</button>
         </form>
       </div>
       <div class="column preview" id="preview">
-        <h2 id="preview-title">[Title]</h2>
+        <h2 id="preview-title"> Agent</h2>
         <div>
           <strong>System Message:</strong>
-          <span id="preview-system">[System Message]</span>
+          <input id="preview-system" type="text"></input>
         </div>
         <div>
           <strong>Initial Messages:</strong>
-          <ul id="preview-initial-list">
-            [Initial Messages]
-          </ul>
+          <input id="preview-initial-list" type="text"></input>
         </div>
         <div><strong>Prompt:</strong></div>
         <input
@@ -132,7 +122,7 @@
           placeholder="[Prompt Placeholder]"
           id="preview-prompt"
         />
-        <button>&#8594;</button>
+        <button type="button">&#8594;</button>
         <div>
           <strong>Response:</strong>
           <div id="preview-response" style="height: 200px; overflow-y: auto">
@@ -151,28 +141,18 @@
             document.getElementById("title").value || "[Title]";
 
           // Update system message
-          document.getElementById("preview-system").innerText =
+          document.getElementById("preview-system").value =
             document.getElementById("agent_instructions").value ||
             "[System Message]";
 
           // Update initial messages list
-          const initialMessages = document
-            .getElementById("initialMessage")
-            .value.split("\n")
-            .map((msg) => msg.trim())
-            .filter((msg) => msg);
-          const previewInitialList = document.getElementById(
-            "preview-initial-list"
-          );
-          previewInitialList.innerHTML = "";
-          initialMessages.forEach((msg) => {
-            const li = document.createElement("li");
-            li.innerText = msg;
-            previewInitialList.appendChild(li);
-          });
+          document.getElementById("preview-initial-list").value =
+            document.getElementById("initialMessage").value ||
+            "[Test Message]";
+
 
           // Update prompt placeholder
-          document.getElementById("preview-prompt").placeholder =
+          document.getElementById("preview-prompt").value =
             document.getElementById("promptPlaceholder").value ||
             "[Prompt Placeholder]";
 
@@ -240,14 +220,13 @@
       document
         .getElementById("generate_agent")
         .addEventListener("click", async () => {
-          let title = document.getElementById("preview-title").value;
-          let systemMessage = document.getElementById("preview-system").value;
-          let initialMessage = document.getElementById(
-            "preview-initial-list"
-          ).value;
-          let promptPlaceholder =
-            document.getElementById("preview-prompt").value;
+          let title =          document.getElementById("preview-title").innerText;
+          let systemMessage =  document.getElementById("preview-system").value;
+          let initialMessage = document.getElementById("preview-initial-list").value;
+          let prompt = document.getElementById("preview-prompt").value;
           let mode = document.getElementById("mode").value;
+
+          let testMessages = {testMessages: initialMessage};
 
           // get the state of the focus
           console.log("fetching focus");
@@ -266,11 +245,10 @@
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              focus,
               title,
               systemMessage,
-              initialMessages,
-              promptPlaceholder,
+              testMessages,
+              prompt,
               mode,
             }),
           });
@@ -278,7 +256,7 @@
           if (response.ok) {
             const agentCode = await response.text(); // Parse the response as plain text
             console.log("Agent code generated:", agentCode);
-
+           
             // Optional: Dynamically download the file
             const blob = new Blob([agentCode], {
               type: "application/javascript",
