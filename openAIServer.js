@@ -320,10 +320,12 @@ app.post('/attach_vectordb_to_assistant', async (req, res) => {
 // Handle agent generation
 app.post("/generate_agent", (req, res) => {
     const { title, systemMessage, testMessages, prompt, mode } = req.body;
+    // testMessages is a problem at the moment
     const agentCode = `
 (function () {
     const mode = 'dark';
-    // let focus = ${JSON.stringify(focus)};
+    let focus = ${JSON.stringify(focus)};
+    /* Use this for testing
     let focus = {
         "assistant_id": "asst_6d0Ow7DV8qmvNXqvkLKjhBi6",
         "assistant_name": "ax2",
@@ -336,6 +338,7 @@ app.post("/generate_agent", (req, res) => {
         "vector_store_id": "vs_Sp1SnNSu2EocNhnBNt1ns1Dk",
         "embed_type": "openai"
     };
+    */
        // when running on codespaces port 3000 there is no need for adding :3000 also there do not end with / 
     
     const domain = 'https://${CODESPACE_NAME}-${PORT}.app.github.dev';
@@ -351,11 +354,11 @@ app.post("/generate_agent", (req, res) => {
     container.style.color = mode === "dark" ? "#fff" : "#000";
 
     const title = document.createElement('h3');
-    title.innerText = ${title};
+    title.innerText = '${title}';
     container.appendChild(title);
 
     const systemDiv = document.createElement('div');
-    systemDiv.innerText = ${systemMessage};
+    systemDiv.innerText = '${systemMessage}';
 
     const initialDiv = document.createElement('div');
     initialDiv.style.display = 'flex';
@@ -367,7 +370,7 @@ app.post("/generate_agent", (req, res) => {
     initialDiv.style.marginTop = '10px';
     initialDiv.style.backgroundColor = mode === "dark" ? "#444" : "#f9f9f9";
     container.appendChild(initialDiv);
-    const initialMessages = ${(testMessages)};
+    const initialMessages = '${testMessages}'.split(',');
     initialMessages.forEach(message => {
         const messageDiv = document.createElement('div');
         messageDiv.innerText = message;
@@ -377,12 +380,12 @@ app.post("/generate_agent", (req, res) => {
         messageDiv.style.borderRadius = '5px';
         messageDiv.style.padding = '10px';
         messageDiv.style.textAlign = 'center';
-        messageDiv.style.backgroundColor = ${mode} === "dark" ? "#555" : "#fff";
+        messageDiv.style.backgroundColor = '${mode}' === "dark" ? "#555" : "#fff";
         initialDiv.appendChild(messageDiv);
     });
 
     const promptInput = document.createElement('input');
-    promptInput.value = ${prompt};
+    promptInput.value = '${prompt}';
     container.appendChild(promptInput);
 
     const sendButton = document.createElement('button');

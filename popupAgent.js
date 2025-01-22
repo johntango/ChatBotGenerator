@@ -1,5 +1,7 @@
 (function () {
     const mode = 'dark';
+    let focus = {"assistant_id":"asst_6d0Ow7DV8qmvNXqvkLKjhBi6","assistant_name":"ax2","dir_path":"","news_path":"","thread_id":"","message":"","run_id":"","run_status":"","vector_store_id":"vs_1b0U7AGHZtEDYUIggheS5Cmh","embed_type":"openai"};
+    /* Use this for testing
     let focus = {
         "assistant_id": "asst_6d0Ow7DV8qmvNXqvkLKjhBi6",
         "assistant_name": "ax2",
@@ -12,6 +14,7 @@
         "vector_store_id": "vs_Sp1SnNSu2EocNhnBNt1ns1Dk",
         "embed_type": "openai"
     };
+    */
        // when running on codespaces port 3000 there is no need for adding :3000 also there do not end with / 
     
     const domain = 'https://vigilant-rotary-phone-xvw65v5xrgvh65gg-3000.app.github.dev';
@@ -27,12 +30,11 @@
     container.style.color = mode === "dark" ? "#fff" : "#000";
 
     const title = document.createElement('h3');
-    title.innerText = 'Agent 23';
+    title.innerText = 'Agent';
     container.appendChild(title);
 
     const systemDiv = document.createElement('div');
-    systemDiv.innerText = 'you are a rat';
-    container.appendChild(systemDiv);
+    systemDiv.innerText = 'Hello';
 
     const initialDiv = document.createElement('div');
     initialDiv.style.display = 'flex';
@@ -44,8 +46,7 @@
     initialDiv.style.marginTop = '10px';
     initialDiv.style.backgroundColor = mode === "dark" ? "#444" : "#f9f9f9";
     container.appendChild(initialDiv);
-
-    const initialMessages = JSON.parse('["Hey There"]');
+    const initialMessages = '[object Object]'.split(',');
     initialMessages.forEach(message => {
         const messageDiv = document.createElement('div');
         messageDiv.innerText = message;
@@ -55,12 +56,12 @@
         messageDiv.style.borderRadius = '5px';
         messageDiv.style.padding = '10px';
         messageDiv.style.textAlign = 'center';
-        messageDiv.style.backgroundColor = mode === "dark" ? "#555" : "#fff";
+        messageDiv.style.backgroundColor = 'dark' === "dark" ? "#555" : "#fff";
         initialDiv.appendChild(messageDiv);
     });
 
     const promptInput = document.createElement('input');
-    promptInput.placeholder = 'go now ';
+    promptInput.value = 'What is AI';
     container.appendChild(promptInput);
 
     const sendButton = document.createElement('button');
