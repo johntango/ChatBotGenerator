@@ -226,7 +226,7 @@
           let prompt = document.getElementById("preview-prompt").value;
           let mode = document.getElementById("mode").value;
 
-          let testMessages = {testMessages: initialMessage};
+          ;
 
           // get the state of the focus
           console.log("fetching focus");
@@ -247,7 +247,7 @@
             body: JSON.stringify({
               title,
               systemMessage,
-              testMessages,
+              initialMessage,
               prompt,
               mode,
             }),

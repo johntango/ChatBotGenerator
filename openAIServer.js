@@ -319,7 +319,7 @@ app.post('/attach_vectordb_to_assistant', async (req, res) => {
 });
 // Handle agent generation
 app.post("/generate_agent", (req, res) => {
-    const { title, systemMessage, testMessages, prompt, mode } = req.body;
+    const { title, systemMessage, initialMessage, prompt, mode } = req.body;
     // testMessages is a problem at the moment
     const agentCode = `
 (function () {
@@ -370,7 +370,7 @@ app.post("/generate_agent", (req, res) => {
     initialDiv.style.marginTop = '10px';
     initialDiv.style.backgroundColor = mode === "dark" ? "#444" : "#f9f9f9";
     container.appendChild(initialDiv);
-    const initialMessages = '${testMessages}'.split(',');
+    const initialMessages = '${initialMessage}'.split(',');
     initialMessages.forEach(message => {
         const messageDiv = document.createElement('div');
         messageDiv.innerText = message;

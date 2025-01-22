@@ -30,11 +30,11 @@
     container.style.color = mode === "dark" ? "#fff" : "#000";
 
     const title = document.createElement('h3');
-    title.innerText = 'Agent';
+    title.innerText = 'Agent007';
     container.appendChild(title);
 
     const systemDiv = document.createElement('div');
-    systemDiv.innerText = 'Hello';
+    systemDiv.innerText = 'You are a helpful agent';
 
     const initialDiv = document.createElement('div');
     initialDiv.style.display = 'flex';
@@ -46,7 +46,7 @@
     initialDiv.style.marginTop = '10px';
     initialDiv.style.backgroundColor = mode === "dark" ? "#444" : "#f9f9f9";
     container.appendChild(initialDiv);
-    const initialMessages = '[object Object]'.split(',');
+    const initialMessages = 'first, second'.split(',');
     initialMessages.forEach(message => {
         const messageDiv = document.createElement('div');
         messageDiv.innerText = message;
