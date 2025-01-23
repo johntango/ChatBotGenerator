@@ -325,20 +325,7 @@ app.post("/generate_agent", (req, res) => {
 (function () {
     const mode = '${mode}';
     let focus = ${JSON.stringify(focus)};
-    /* Use this for testing
-    let focus = {
-        "assistant_id": "asst_6d0Ow7DV8qmvNXqvkLKjhBi6",
-        "assistant_name": "ax2",
-        "dir_path": "",
-        "news_path": "",
-        "thread_id": "",
-        "message": "",
-        "run_id": "",
-        "run_status": "",
-        "vector_store_id": "vs_Sp1SnNSu2EocNhnBNt1ns1Dk",
-        "embed_type": "openai"
-    };
-    */
+    
        // when running on codespaces port 3000 there is no need for adding :3000 also there do not end with / 
     
     const domain = 'https://${CODESPACE_NAME}-${PORT}.app.github.dev';

@@ -1,6 +1,8 @@
+
 (function () {
     const mode = 'dark';
     let focus = {"assistant_id":"asst_6d0Ow7DV8qmvNXqvkLKjhBi6","assistant_name":"ax2","dir_path":"","news_path":"","thread_id":"","message":"","run_id":"","run_status":"","vector_store_id":"vs_1b0U7AGHZtEDYUIggheS5Cmh","embed_type":"openai"};
+       // when running on codespaces port 3000 there is no need for adding :3000 also there do not end with / 
     
     const domain = 'https://vigilant-rotary-phone-xvw65v5xrgvh65gg-3000.app.github.dev';
     let messages = [];
@@ -15,11 +17,11 @@
     container.style.color = mode === "dark" ? "#fff" : "#000";
 
     const title = document.createElement('h3');
-    title.innerText = 'Agent007';
+    title.innerText = 'Agent005';
     container.appendChild(title);
 
     const systemDiv = document.createElement('div');
-    systemDiv.innerText = 'You are a helpful agent';
+    systemDiv.innerText = 'do nothing';
 
     const initialDiv = document.createElement('div');
     initialDiv.style.display = 'flex';
@@ -31,7 +33,7 @@
     initialDiv.style.marginTop = '10px';
     initialDiv.style.backgroundColor = mode === "dark" ? "#444" : "#f9f9f9";
     container.appendChild(initialDiv);
-    const initialMessages = 'first, second'.split(',');
+    const initialMessages = 'first, next, next'.split(',');
     initialMessages.forEach(message => {
         const messageDiv = document.createElement('div');
         messageDiv.innerText = message;
@@ -46,7 +48,7 @@
     });
 
     const promptInput = document.createElement('input');
-    promptInput.value = 'What is AI';
+    promptInput.value = 'Hello world';
     container.appendChild(promptInput);
 
     const sendButton = document.createElement('button');
@@ -77,7 +79,7 @@
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify({ focus }),
+                    body: JSON.stringify({ focus}),
                 });
 
                 let threadData = await threadResponse.json();
@@ -113,6 +115,7 @@
             }
 
             focus.message = JSON.stringify(addMessageData.message);
+            // add to the responseDiv
             responseDiv.innerHTML = addMessageData.message;
             
         } catch (error) {
@@ -120,7 +123,6 @@
             return;
         }
     });
-
     newThreadButton.addEventListener('click', async function () {
         try {
             const threadResponse = await fetch(domain+'/create_thread', {
@@ -144,7 +146,6 @@
             console.error("Failed to create a new thread:", error);
         }
     });
-
     const popupDiv = document.getElementById('popup');
 
     // Append the container to the div if it exists, otherwise to the body
