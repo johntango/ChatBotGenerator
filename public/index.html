@@ -121,7 +121,9 @@
           placeholder="[Prompt Placeholder]"
           id="preview-prompt"
         />
-        <button type="button">&#8594;</button>
+        <button id="runThread" type="button">&#8594;</button>
+        <button id="newThread" type="button">New Thread</button>
+
         <div>
           <strong>Response:</strong>
           <div id="preview-response" style="height: 200px; overflow-y: auto">
@@ -131,6 +133,18 @@
       </div>
     </div>
     <script>
+      let focus = {
+        assistant_id: "",
+        assistant_name: "",
+        dir_path: "",
+        news_path: "",
+        thread_id: "",
+        message: "",
+        run_id: "",
+        run_status: "",
+        vector_store_id: "",
+        embed_type: "openai"
+    };
       document.addEventListener("DOMContentLoaded", () => {
         function updatePreview() {
           console.log("updatePreview called");
@@ -154,6 +168,7 @@
           document.getElementById("preview-prompt").value =
             document.getElementById("promptPlaceholder").value ||
             "[Prompt Placeholder]";
+
 
           // Update mode
           const mode = document.getElementById("mode").value;
@@ -214,6 +229,7 @@
           });
 
           const result = await response.json();
+          focus = result.focus;
           alert(result.message);
         });
       document
@@ -236,7 +252,7 @@
             },
             body: JSON.stringify({}),
           });
-          console.log("got foccus");
+          console.log("got focus");
           // generate agent code
           const response = await fetch("/generate_agent", {
             method: "POST",
@@ -267,6 +283,41 @@
           } else {
             console.error("Error generating agent:", await response.text());
           }
+        });
+        // Run the thread
+        document
+        .getElementById("runThread")
+        .addEventListener("click", async () => {
+          alert(`focus : ${focus}`);
+          const system_message = document.getElementById("preview-system").value;
+          const user_prompt = document.getElementById("preview-prompt").value;
+          const response = await fetch("/run_thread", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ focus, system_message, user_prompt }),
+          });
+
+          const result = await response.json();
+          alert(`GPT response: ${result.message}`);
+          document.getElementById("preview-response").innerText = result.message;
+          alert(result.message);
+        });
+        document
+        .getElementById("newThread")
+        .addEventListener("click", async () => {
+          const response = await fetch("/create_thread", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ focus }),
+          });
+
+          const result = await response.json();
+          focus = result.focus;
+          alert(result.message);
         });
     </script>
   </body>

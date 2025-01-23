@@ -187,8 +187,7 @@ app.post('/upload_files', async (req, res) => {
 
 // 2. Create a Thread
 app.post('/create_thread', async (req, res) => {
-    const { focus } = req.body;
-
+    let {focus} = req.body;
     try {
             // get a new thread to operate on
         let threadResponse = await openai.beta.threads.create()
@@ -204,9 +203,10 @@ app.post('/create_thread', async (req, res) => {
     }
 });
 
-// 3. Add Messages to the Thread and Run it
+// 3. Add Messages to the Thread and Run it. For this to scale the Agent must pass in its own focus 
 app.post('/run_thread', async (req, res) => {
-    const { focus, system_message, user_prompt } = req.body;
+    // here this is the local focus state
+    let { focus, system_message, user_prompt } = req.body;
     let agentResponse = []
     // add messages and run the thread
     try {
