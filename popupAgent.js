@@ -1,21 +1,6 @@
 (function () {
     const mode = 'dark';
     let focus = {"assistant_id":"asst_6d0Ow7DV8qmvNXqvkLKjhBi6","assistant_name":"ax2","dir_path":"","news_path":"","thread_id":"","message":"","run_id":"","run_status":"","vector_store_id":"vs_1b0U7AGHZtEDYUIggheS5Cmh","embed_type":"openai"};
-    /* Use this for testing
-    let focus = {
-        "assistant_id": "asst_6d0Ow7DV8qmvNXqvkLKjhBi6",
-        "assistant_name": "ax2",
-        "dir_path": "",
-        "news_path": "",
-        "thread_id": "",
-        "message": "",
-        "run_id": "",
-        "run_status": "",
-        "vector_store_id": "vs_Sp1SnNSu2EocNhnBNt1ns1Dk",
-        "embed_type": "openai"
-    };
-    */
-       // when running on codespaces port 3000 there is no need for adding :3000 also there do not end with / 
     
     const domain = 'https://vigilant-rotary-phone-xvw65v5xrgvh65gg-3000.app.github.dev';
     let messages = [];
@@ -68,6 +53,11 @@
     sendButton.innerHTML = '&#8594;';
     container.appendChild(sendButton);
 
+    const newThreadButton = document.createElement('button');
+    newThreadButton.innerText = 'New Thread';
+    newThreadButton.style.marginLeft = '10px';
+    container.appendChild(newThreadButton);
+
     const responseDiv = document.createElement('div');
     responseDiv.style.height = '200px';
     responseDiv.style.overflowY = 'auto';
@@ -87,7 +77,7 @@
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify({ focus}),
+                    body: JSON.stringify({ focus }),
                 });
 
                 let threadData = await threadResponse.json();
@@ -123,7 +113,6 @@
             }
 
             focus.message = JSON.stringify(addMessageData.message);
-            // add to the responseDiv
             responseDiv.innerHTML = addMessageData.message;
             
         } catch (error) {
@@ -131,6 +120,31 @@
             return;
         }
     });
+
+    newThreadButton.addEventListener('click', async function () {
+        try {
+            const threadResponse = await fetch(domain+'/create_thread', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ focus }),
+            });
+
+            let threadData = await threadResponse.json();
+            if (!threadResponse.ok) {
+                console.error("Failed to create a new thread:", threadData.message);
+                return;
+            }
+
+            focus = threadData.focus;
+            responseDiv.innerHTML = ''; // Clear previous messages
+            console.log("New thread created:", focus.thread_id);
+        } catch (error) {
+            console.error("Failed to create a new thread:", error);
+        }
+    });
+
     const popupDiv = document.getElementById('popup');
 
     // Append the container to the div if it exists, otherwise to the body

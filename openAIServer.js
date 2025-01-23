@@ -323,7 +323,7 @@ app.post("/generate_agent", (req, res) => {
     // testMessages is a problem at the moment
     const agentCode = `
 (function () {
-    const mode = 'dark';
+    const mode = '${mode}';
     let focus = ${JSON.stringify(focus)};
     /* Use this for testing
     let focus = {
@@ -392,6 +392,11 @@ app.post("/generate_agent", (req, res) => {
     sendButton.innerHTML = '&#8594;';
     container.appendChild(sendButton);
 
+    const newThreadButton = document.createElement('button');
+    newThreadButton.innerText = 'New Thread';
+    newThreadButton.style.marginLeft = '10px';
+    container.appendChild(newThreadButton);
+
     const responseDiv = document.createElement('div');
     responseDiv.style.height = '200px';
     responseDiv.style.overflowY = 'auto';
@@ -453,6 +458,29 @@ app.post("/generate_agent", (req, res) => {
         } catch (error) {
             console.error("Failed to add message to thread:", error);
             return;
+        }
+    });
+    newThreadButton.addEventListener('click', async function () {
+        try {
+            const threadResponse = await fetch(domain+'/create_thread', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ focus }),
+            });
+
+            let threadData = await threadResponse.json();
+            if (!threadResponse.ok) {
+                console.error("Failed to create a new thread:", threadData.message);
+                return;
+            }
+
+            focus = threadData.focus;
+            responseDiv.innerHTML = ''; // Clear previous messages
+            console.log("New thread created:", focus.thread_id);
+        } catch (error) {
+            console.error("Failed to create a new thread:", error);
         }
     });
     const popupDiv = document.getElementById('popup');

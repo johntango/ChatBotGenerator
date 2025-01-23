@@ -5,15 +5,16 @@
       .popup {
         display: none; /* Initially hidden */
         position: fixed;
-        top: 50%;
-        left: 50%;
+        top: 50%; /* Ensure it is vertically centered */
+        left: 50%; /* Ensure it is horizontally centered */
         transform: translate(-50%, -50%);
-        width: 1px;
-        padding: 1px;
-        background-color: rgb(185, 188, 188);
+        width: 300px; /* Set a default width */
+        padding: 20px; /* Add padding for content */
+        background-color: rgb(185, 188, 188); /* Light gray background */
         border: 2px solid #dedada;
         box-shadow: 0 4px 8px rgba(138, 22, 22, 0.2);
         z-index: 1000;
+        border-radius: 8px; /* Rounded corners */
       }
 
       /* Dim background when popup is shown */
@@ -38,56 +39,47 @@
 
       /* Floating close button */
       .close-button {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 10px;
+        position: absolute;
+        top: 10px; /* Positioned inside the popup */
+        right: 10px;
+        padding: 5px 10px;
         background-color: red;
         color: white;
         border: none;
         border-radius: 50%;
         cursor: pointer;
-        font-size: 18px;
-        z-index: 1010; /* Higher than the overlay */
-        display: none; /* Initially hidden */
+        font-size: 14px;
+        z-index: 1010; /* Higher than the popup content */
       }
     </style>
   </head>
   <body>
     <!-- Button to toggle the popup -->
-    <button class="button" onclick="togglePopup()">Toggle Popup</button>
+    <button class="button" onclick="togglePopup()">Open Agent</button>
 
     <!-- Overlay for the popup -->
     <div id="overlay" class="overlay"></div>
 
     <!-- Popup container -->
     <div id="popup" class="popup">
-      <h1></h1>
-
+      <button id="closeButton" class="close-button" onclick="togglePopup()">
+        X
+      </button>
+      <h2>Assistant</h2>
       <!-- Content will be dynamically added here -->
     </div>
-    <button id="closeButton" class="close-button" onclick="togglePopup()">
-      X
-    </button>
-    <!-- Floating close button -->
-
     <script>
       function togglePopup() {
         const popup = document.getElementById("popup");
         const overlay = document.getElementById("overlay");
-        const closeButton = document.getElementById("closeButton");
 
-        // Check if the popup is currently displayed
-        if (overlay.style.display === "block") {
+        // Toggle visibility
+        if (popup.style.display === "block") {
           popup.style.display = "none"; // Hide popup
           overlay.style.display = "none"; // Hide overlay
-          closeButton.style.display = "none"; // Hide close button
         } else {
-          // Example of dynamically adding content to the popup
-
           popup.style.display = "block"; // Show popup
           overlay.style.display = "block"; // Show overlay
-          closeButton.style.display = "block"; // Show close button
         }
       }
     </script>
