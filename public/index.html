@@ -35,20 +35,25 @@
         padding: 20px;
         border-radius: 8px;
       }
+      #preview-response {
+        transition: background-color 0.3s, color 0.3s; /* Smooth transition for color changes */
+      }
     </style>
   </head>
   <body class="bg-light text-dark">
     <div class="container mt-4">
-      <h1 class="text-center">Agent Generator</h1>
+      <h1 class="text-center">OpenAI ChatBot Generator</h1>
       <ul class="list-group list-group-numbered">
         <li class="list-group-item">
-          Create or Get Assistant in OpenAI. If Assistant already has VectorDB,
-          ignore the next step.
+          Create or Get an Assistant in OpenAI. If Assistant already has
+          VectorDB, ignore the next step.
         </li>
         <li class="list-group-item">
           Upload Files to VectorDB. They will be attached to Assistant.
         </li>
-        <li class="list-group-item">Generate App Code for WebPage.</li>
+        <li class="list-group-item">
+          Test Agent and then Generate App Code for WebPage.
+        </li>
       </ul>
 
       <div class="d-flex flex-column-reverse flex-lg-row gap-4 mt-4">
@@ -114,7 +119,7 @@
               <button
                 id="createAssistant"
                 type="button"
-                class="btn btn-primary"
+                class="btn btn-success"
               >
                 Create or Get Assistant
               </button>
@@ -136,11 +141,7 @@
                 <option value="openai">OpenAI</option>
                 <option value="local">Local</option>
               </select>
-              <button
-                id="uploadFiles"
-                type="button"
-                class="btn btn-secondary mt-2"
-              >
+              <button id="uploadFiles" type="button" class="btn btn-success">
                 Upload Files to VectorDB
               </button>
             </div>
@@ -158,7 +159,7 @@
             </div>
             <div class="mb-3">
               <label for="initialMessage" class="form-label"
-                >Initial Message:</label
+                >Example Prompts, comma separated:</label
               >
               <input
                 type="text"
@@ -265,6 +266,10 @@
           document.querySelectorAll(".form-label").forEach((label) => {
             label.style.color = isDarkMode ? "white" : "black";
           });
+          const previewResponse = document.getElementById("preview-response");
+          previewResponse.style.backgroundColor = isDarkMode ? "#555" : "#fff";
+          previewResponse.style.color = isDarkMode ? "white" : "black";
+
           // Update all <strong> elements in the #preview div
           document.querySelectorAll("#preview strong").forEach((strong) => {
             strong.style.color = isDarkMode ? "white" : "black";
