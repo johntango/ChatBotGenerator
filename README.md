@@ -5,6 +5,7 @@ The Generator creates Javascript script so that the Agent can be deployed in any
 The "heavy lifting" of sending messages to OpenAI API is handled by openAIServer.js
 Here we demo the script in popupAgent.js which is included into Test.html.
 Since the Agent does not "know" the openAIServer we need to arrange CORS in Express.
+When createing the Agent you can choose the model it is using. At present the Agent cannot update its model as a matter of choice. However, it would be easy to impliment this.
 
 Running in Codespace openAIServer's
 
