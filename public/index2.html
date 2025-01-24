@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Popup App Generator</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .container {
+        display: flex;
+        gap: 20px;
+      }
+      .column {
+        flex: 1;
+        border: 1px solid #ddd;
+        padding: 20px;
+      }
+      .preview {
+        border: 1px solid #000;
+        padding: 20px;
+        background-color: white;
+        color: black;
+      }
+      .dark-mode {
+        background-color: #333;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Agent Generator</h1>
+    <h3>
+      <ul>
+        <li>
+          1. Create or Get Assistant in OpenAI. If Assistant already has
+          VectorDB ignore next step
+        </li>
+        <li>2. Upload Files to VectorDB and Attach to Assistant if Needed</li>
+        <li>3. Generate App Code for WebPage</li>
+      </ul>
+    </h3>
+    <div class="container">
+      <div class="column">
+        <form id="generator-form">
+          <label for ="title">Title of App:</label> 
+            <input type="text" name="title" id="title" required /><br /><br />
+          <label for="assistant_name">Assistant Name:</label>
+            <input
+              type="text"
+              name="assistant_name"
+              id="assistant_name"
+              required /> <br /><br />
+          <label for="assistantMessage">Assistant System Message:</label>
+            <input
+              type="text"
+              name="assistantMessage"
+              id="assistantMessage"
+              required /><br /><br />
+              <label for="modelSelect">Choose a model:</label>
+              <select id="modelSelect" name="model">
+                  <option value="gpt-4o-2024-08-06">gpt-4o-2024-08-06</option>
+                  <option value="gpt-4o-2024-05-13">gpt-4o-2024-05-13</option>
+                  <option value="gpt-4-turbo-preview">gpt-4-turbo-preview</option>
+                  <option value="gpt-4-turbo-2024-04-09">gpt-4-turbo-2024-04-09</option>
+                  <option value="gpt-4-turbo">gpt-4-turbo</option>
+                  <option value="gpt-4-1106-preview" selected>gpt-4-1106-preview</option>
+                  <option value="gpt-4-0613">gpt-4-0613</option>
+                  <option value="gpt-4-0125-preview">gpt-4-0125-preview</option>
+                  <option value="gpt-4">gpt-4</option>
+                  <option value="gpt-3.5-turbo-16k">gpt-3.5-turbo-16k</option>
+                  <option value="gpt-3.5-turbo-1106">gpt-3.5-turbo-1106</option>
+              </select>
+          <button id="createAssistant" type="button">Create or get Assistant</button
+          ><br /><br />
+          <label
+            >Directory Path for Files Upload:
+            <input type="text" name="dir_path" id="dir_path"  /></label
+          ><br /><br />
+          <label
+            >Embed Type:
+            <select name="embed_type" id="embed_type">
+              <option value="openai">OpenAI</option>
+              <option value="local">Local</option>
+            </select>
+            <button id="uploadFiles" type="button">Upload Files to VectorDB</button> </label
+          ><br /><br />
+
+          <label for="agent_instructions">Agent System Instructions:</label>
+            <input
+              type="text"
+              name="agent_instructions"
+              id="agent_instructions"
+              required
+            ></input><br /><br />
+
+          <label for ="initialMessage">Initial Message: </label>
+            <input
+              type="text"
+              name="initialMessage"
+              id="initialMessage"
+            ></input><br /><br />
+            
+          <label for="promptPlaceholder">Prompt Placeholder:</label> 
+            <input
+              type="text"
+              name="promptPlaceholder"
+              id="promptPlaceholder"
+              required /><br /><br />
+
+          <label for="mode">Mode: </label>
+            <select name="mode" id="mode">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select> <br /><br />
+
+          <button id="generate_agent" type="button">Generate Agent Code</button>
+        </form>
+      </div>
+      <div class="column preview" id="preview">
+        <h2 id="preview-title"> Agent</h2>
+        <div>
+          <strong>System Message:</strong>
+          <input id="preview-system" type="text"></input>
+        </div>
+        <div>
+          <strong>Initial Messages:</strong>
+          <input id="preview-initial-list" type="text"></input>
+        </div>
+        <div><strong>Prompt:</strong></div>
+        <input
+          type="text"
+          placeholder="[Prompt Placeholder]"
+          id="preview-prompt"
+        />
+        <button id="runThread" type="button">&#8594;</button>
+        <button id="newThread" type="button">New Thread</button>
+
+        <div>
+          <strong>Response:</strong>
+          <div id="preview-response" style="height: 200px; overflow-y: auto">
+            [Response]
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      let focus = {
+        assistant_id: "",
+        assistant_name: "",
+        dir_path: "",
+        news_path: "",
+        thread_id: "",
+        message: "",
+        run_id: "",
+        run_status: "",
+        vector_store_id: "",
+        embed_type: "openai"
+    };
+      document.addEventListener("DOMContentLoaded", () => {
+        function updatePreview() {
+          console.log("updatePreview called");
+
+          // Update title
+          document.getElementById("preview-title").innerText =
+            document.getElementById("title").value || "[Title]";
+
+          // Update system message
+          document.getElementById("preview-system").value =
+            document.getElementById("agent_instructions").value ||
+            "[System Message]";
+
+          // Update initial messages list
+          document.getElementById("preview-initial-list").value =
+            document.getElementById("initialMessage").value ||
+            "[Test Message]";
+
+
+          // Update prompt placeholder
+          document.getElementById("preview-prompt").value =
+            document.getElementById("promptPlaceholder").value ||
+            "[Prompt Placeholder]";
+
+
+          // Update mode
+          const mode = document.getElementById("mode").value;
+
+          const preview = document.getElementById("preview");
+          preview.classList.remove("dark-mode");
+          if (mode === "dark") {
+            preview.classList.add("dark-mode");
+          }
+        }
+
+        document
+          .querySelectorAll(
+            "#generator-form input, #generator-form textarea, #generator-form select"
+          )
+          .forEach((element) => {
+            element.addEventListener("input", updatePreview);
+            element.addEventListener("change", updatePreview);
+          });
+
+        console.log(
+          document.querySelectorAll(
+            "#generator-form input, #generator-form textarea, #generator-form select"
+          )
+        );
+      });
+      document
+        .getElementById("uploadFiles")
+        .addEventListener("click", async () => {
+          const dirPath = document.getElementById("dir_path").value;
+          const embedType = document.getElementById("embed_type").value;
+
+          const response = await fetch("/upload_files", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ dir_path: dirPath, embed_type: embedType }),
+          });
+
+          const result = await response.json();
+          alert(result.message);
+        });
+
+      document
+        .getElementById("createAssistant")
+        .addEventListener("click", async () => {
+          const name = document.getElementById("assistant_name").value;
+          const assistantMessage =
+            document.getElementById("assistantMessage").value;
+          const model = document.getElementById("modelSelect").value;
+
+          const response = await fetch("/create_or_get_assistant", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ name, model, assistantMessage }),
+          });
+
+          const result = await response.json();
+          focus = result.focus;
+          alert(result.message);
+        });
+      document
+        .getElementById("generate_agent")
+        .addEventListener("click", async () => {
+          let title =          document.getElementById("preview-title").innerText;
+          let systemMessage =  document.getElementById("preview-system").value;
+          let initialMessage = document.getElementById("preview-initial-list").value;
+          let prompt = document.getElementById("preview-prompt").value;
+          let mode = document.getElementById("mode").value;
+
+          ;
+
+          // get the state of the focus
+          console.log("fetching focus");
+          let { message, focus } = await fetch("/get_focus", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({}),
+          });
+          console.log("got focus");
+          // generate agent code
+          const response = await fetch("/generate_agent", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              title,
+              systemMessage,
+              initialMessage,
+              prompt,
+              mode,
+            }),
+          });
+          console.log("response from generate_agent", response);
+          if (response.ok) {
+            const agentCode = await response.text(); // Parse the response as plain text
+            console.log("Agent code generated:", agentCode);
+           
+            // Optional: Dynamically download the file
+            const blob = new Blob([agentCode], {
+              type: "application/javascript",
+            });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "popupAgent.js";
+            link.click();
+          } else {
+            console.error("Error generating agent:", await response.text());
+          }
+        });
+        // Run the thread
+        document
+        .getElementById("runThread")
+        .addEventListener("click", async () => {
+          alert(`focus : ${focus}`);
+          const system_message = document.getElementById("preview-system").value;
+          const user_prompt = document.getElementById("preview-prompt").value;
+          const response = await fetch("/run_thread", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ focus, system_message, user_prompt }),
+          });
+
+          const result = await response.json();
+          alert(`GPT response: ${result.message}`);
+          document.getElementById("preview-response").innerText = result.message;
+          alert(result.message);
+        });
+        document
+        .getElementById("newThread")
+        .addEventListener("click", async () => {
+          const response = await fetch("/create_thread", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ focus }),
+          });
+
+          const result = await response.json();
+          focus = result.focus;
+          alert(result.message);
+        });
+    </script>
+  </body>
+</html>
